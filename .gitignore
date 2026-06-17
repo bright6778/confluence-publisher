@@ -1,0 +1,25 @@
+# 환경변수 / 민감 정보 (절대 커밋 금지)
+.env
+.env.local
+.env.*.local
+
+# 실제 업무 문서 (회사 기밀)
+pages/
+pages - kodey/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

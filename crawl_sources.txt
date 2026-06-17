@@ -1,0 +1,13 @@
+# ─────────────────────────────────────────
+# 크롤링 소스 목록
+# 사용법: python crawl.py
+# ─────────────────────────────────────────
+
+# MD 파일 (키워드 추출 기준 — 관련 섹션 필터링에 사용)
+md: 20260615_中国SI供应商_分析报告_v1.0.md
+
+# 크롤링할 URL 목록 (한 줄에 하나씩, # 로 주석)
+https://www.jt-ele.com/
+https://en.lyric-robot.com/
+https://www.colibri.com.sg/
+https://cn.piagroup.com/

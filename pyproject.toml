@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "confluence-publisher"
+version = "0.1.0"
+description = "Publish Markdown/HTML files to Confluence via REST API"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31.0",
+    "markdown>=3.5.0",
+    "python-dotenv>=1.0.0",
+    "beautifulsoup4>=4.12.0",
+]
+
+[project.scripts]
+confluence-publish = "confluence_publisher.publish:main"
+confluence-crawl   = "confluence_publisher.crawl:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["confluence_publisher*"]
