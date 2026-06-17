@@ -12,11 +12,13 @@ dependencies = [
     "markdown>=3.5.0",
     "python-dotenv>=1.0.0",
     "beautifulsoup4>=4.12.0",
+    "mcp>=1.0.0",
 ]
 
 [project.scripts]
 confluence-publish = "confluence_publisher.publish:main"
 confluence-crawl   = "confluence_publisher.crawl:main"
+confluence-mcp     = "confluence_publisher.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

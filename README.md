@@ -146,6 +146,51 @@ confluence-crawl --save-images  # 同时保存图片到 pages/
 
 ---
 
+## MCP 工具（让 AI 直接调用）
+
+MCP（Model Context Protocol）允许 Claude Code 直接调用 `publish` 和 `crawl` 工具，
+无需手动输入命令，直接对话即可完成操作。
+
+### 配置 Claude Code
+
+在你的项目目录（放 `.env` 和 `pages/` 的目录）创建 `.claude/settings.json`：
+
+```json
+{
+  "mcpServers": {
+    "confluence-publisher": {
+      "command": "confluence-mcp"
+    }
+  }
+}
+```
+
+> **注意**：`.env` 文件必须在同一个项目目录里（和 `.claude/settings.json` 同级），
+> MCP server 启动时会从该目录读取 `.env`。
+
+### MCP 使用方式
+
+配置好后，直接在 Claude Code 对话框中说：
+
+```
+帮我把 pages/报告.md 发布到 Confluence
+```
+
+```
+抓取 https://example.com 的内容，参考关键词用 pages/报告.md
+```
+
+Claude 会自动调用对应工具并返回结果，不需要手动运行任何命令。
+
+### MCP 可用工具
+
+| 工具 | 参数 | 说明 |
+|------|------|------|
+| `publish` | `file_path` | 发布 .md 或 .html 文件到 Confluence |
+| `crawl` | `url`、`md_path`（可选）、`save_images`（可选）、`top_n`（可选） | 抓取网页并提取相关内容 |
+
+---
+
 ## 注意事项
 
 - Confluence 6.x 不支持 emoji，会自动过滤
