@@ -10,14 +10,22 @@
 pip install git+https://github.com/bright6778/confluence-publisher.git
 ```
 
+安装一次后，在**任意项目目录**都能直接使用 `confluence-publish` 命令，无需每次复制脚本。
+
+更新到最新版本：
+
+```bash
+pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
+```
+
 ---
 
 ## 配置
 
-在你的项目目录创建 `.env` 文件：
+在你的项目目录创建 `.env` 文件（参考 `.env.example`）：
 
 ```env
-CONFLUENCE_URL=https://konawiki.konai.com/
+CONFLUENCE_URL=https://wiki.yourcompany.com/
 CONFLUENCE_USERNAME=你的用户名
 CONFLUENCE_PASSWORD=你的密码
 DEFAULT_SPACE=~你的用户名
@@ -26,6 +34,8 @@ DEFAULT_PARENT_ID=父页面ID
 
 - `DEFAULT_SPACE` — 发布到哪个空间（个人空间用 `~用户名`）
 - `DEFAULT_PARENT_ID` — 父页面 ID（新页面创建在这个页面下）
+
+> **重要**：`.env` 文件包含密码，务必加入 `.gitignore`，不要上传到 git。
 
 ---
 
@@ -103,7 +113,7 @@ def hello():
 
 ---
 
-## 逻辑说明
+## 发布逻辑
 
 - **页面已存在** → 自动更新（根据标题匹配）
 - **页面不存在** → 自动创建（在 `DEFAULT_PARENT_ID` 下）
@@ -112,11 +122,12 @@ def hello():
 
 ---
 
-## 网页抓取辅助工具
+## 网页内容抓取
 
 根据关键词从网页中提取相关内容，辅助写文档。
 
-**1. 编辑 `crawl_sources.txt`：**
+**第一步 — 编辑 `crawl_sources.txt`：**
+
 ```
 md: pages/我的文档.md
 
@@ -124,7 +135,8 @@ https://参考网站.com/page1
 https://其他网站.com/docs
 ```
 
-**2. 运行：**
+**第二步 — 运行：**
+
 ```bash
 confluence-crawl                # 使用 crawl_sources.txt
 confluence-crawl --save-images  # 同时保存图片到 pages/
@@ -137,4 +149,3 @@ confluence-crawl --save-images  # 同时保存图片到 pages/
 - Confluence 6.x 不支持 emoji，会自动过滤
 - 公司内网 SSL 证书验证已关闭（适配内网环境）
 - 文件名含空格时加引号：`confluence-publish "pages/文件 名称.md"`
-- `.env` 文件包含密码，务必加入 `.gitignore`
