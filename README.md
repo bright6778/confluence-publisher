@@ -6,15 +6,17 @@
 
 ## 安装
 
-```bash
+打开 PowerShell，**在哪个目录都可以**，运行一次即可全局生效：
+
+```powershell
 pip install git+https://github.com/bright6778/confluence-publisher.git
 ```
 
-安装一次后，在**任意项目目录**都能直接使用 `confluence-publish` 命令，无需每次复制脚本。
+安装后在**任意项目目录**都能直接使用 `confluence-publish` 命令，无需每次复制脚本。
 
 更新到最新版本：
 
-```bash
+```powershell
 pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
 ```
 
@@ -22,7 +24,7 @@ pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
 
 ## 配置
 
-在你的项目目录创建 `.env` 文件（参考 `.env.example`）：
+在**准备运行 `confluence-publish` 的项目目录**里创建 `.env` 文件（参考 `.env.example`）：
 
 ```env
 CONFLUENCE_URL=https://wiki.yourcompany.com/

@@ -86,21 +86,55 @@ pip 安装后 `import` 时若无 `.env` 就会崩溃。
 
 ## 使用方式（改造后）
 
-任意项目只需：
+### 第一步 — 安装
 
-```bash
-# 安装（本地开发）
-pip install -e /path/to/confluence-publisher
+**在哪里运行？**
+打开 PowerShell（或任意终端），**在哪个目录都无所谓**。
+安装是 Python 全局生效的，只需做一次。
 
-# 安装（从 GitHub）
-pip install git+https://github.com/yourname/confluence-publisher
+```powershell
+# 从 GitHub 安装（推荐）
+pip install git+https://github.com/bright6778/confluence-publisher.git
 
-# 使用
-confluence-publish pages/report.md
-confluence-crawl crawl_sources.txt
+# 本地开发时用（修改源码后自动生效，无需重新安装）
+pip install -e D:\Github\confluence-publisher
 ```
 
-`.env` 文件放在**当前工作目录**，工具会自动读取。
+### 第二步 — 准备项目目录
+
+**`.env` 放在哪里？**
+放在你**准备运行 `confluence-publish` 命令的项目目录**里。
+不是放在 confluence-publisher 的安装目录里。
+
+```
+D:\Github\我的项目\          ← 在这里运行 confluence-publish
+  pages\
+    报告.md
+    图片.png
+  .env                      ← 放在这里
+```
+
+`.env` 内容：
+```env
+CONFLUENCE_URL=https://konawiki.konai.com/
+CONFLUENCE_USERNAME=你的用户名
+CONFLUENCE_PASSWORD=你的密码
+DEFAULT_SPACE=~你的用户名
+DEFAULT_PARENT_ID=父页面ID
+```
+
+### 第三步 — 运行
+
+```powershell
+# 进入项目目录
+cd D:\Github\我的项目
+
+# 发布单个文件
+confluence-publish pages\报告.md
+
+# 发布 pages\ 目录下所有文件
+confluence-publish
+```
 
 ---
 
