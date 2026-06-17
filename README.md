@@ -1,26 +1,27 @@
 # Confluence 自动发布工具
 
-将 `.html` 或 `.md` 文件自动发布到公司 Confluence wiki。
+将 `.md` 或 `.html` 文件自动发布到公司 Confluence wiki。
 
 ---
 
-## 环境要求
+## 安装
 
-- Python 3.8+
-- 安装依赖：`pip install -r requirements.txt`
+```bash
+pip install git+https://github.com/bright6778/confluence-publisher.git
+```
 
 ---
 
 ## 配置
 
-编辑 `.env` 文件：
+在你的项目目录创建 `.env` 文件：
 
 ```env
 CONFLUENCE_URL=https://konawiki.konai.com/
-CONFLUENCE_USERNAME=mllee
+CONFLUENCE_USERNAME=你的用户名
 CONFLUENCE_PASSWORD=你的密码
-DEFAULT_SPACE=~mllee
-DEFAULT_PARENT_ID=428695901
+DEFAULT_SPACE=~你的用户名
+DEFAULT_PARENT_ID=父页面ID
 ```
 
 - `DEFAULT_SPACE` — 发布到哪个空间（个人空间用 `~用户名`）
@@ -28,36 +29,29 @@ DEFAULT_PARENT_ID=428695901
 
 ---
 
-## 使用方法
+## 文件结构
 
-### 发布单个文件
-
-```bash
-python publish.py "pages/报告.md"
-python publish.py "pages/报告.html"
 ```
-
-### 发布 pages/ 目录下所有文件
-
-```bash
-python publish.py
+你的项目/
+  pages/
+    图片1.png
+    图片2.png
+    报告.md           ← 写文档的地方
+    报告.html         ← 或者直接放 HTML
+  .env               ← 账号配置（不要上传 git）
 ```
 
 ---
 
-## 文件结构
+## 发布命令
 
-```
-confluence-publisher/
-  pages/
-    images/          ← 本地图片放这里
-      图片1.png
-      图片2.png
-    报告.md           ← 写文档的地方
-    报告.html         ← 或者直接放 HTML
-  publish.py         ← 发布工具（不用修改）
-  .env               ← 账号配置
-  requirements.txt
+```bash
+# 发布单个文件
+confluence-publish "pages/报告.md"
+confluence-publish "pages/报告.html"
+
+# 发布 pages/ 目录下所有文件
+confluence-publish
 ```
 
 ---
@@ -66,7 +60,7 @@ confluence-publisher/
 
 ### 方式一：直接写 Markdown（推荐）
 
-新建 `pages/새문서.md`，用标准 Markdown 语法写：
+新建 `pages/报告.md`，用标准 Markdown 语法：
 
 ```markdown
 # 文档标题
@@ -81,7 +75,7 @@ confluence-publisher/
 
 > 这里写注意事项，发布后会变成蓝色提示框。
 
-![图片说明](images/图片文件名.png)
+![图片说明](图片文件名.png)
 
 ​```python
 def hello():
@@ -93,21 +87,19 @@ def hello():
 
 1. 让 AI（Claude 等）生成报告 HTML
 2. 将 HTML 文件放到 `pages/` 目录
-3. 运行发布命令
+3. 运行 `confluence-publish`
 
 ---
 
-## 图片处理方式
+## 图片处理
 
 工具自动处理三种图片，无需手动操作：
 
 | 类型 | 写法 | 说明 |
 |------|------|------|
-| 本地文件 | `![说明](images/图片.png)` | 放在 `pages/images/` 目录 |
+| 本地文件 | `![说明](图片.png)` | 放在 `pages/` 目录 |
 | 外部 URL | `![说明](https://example.com/图.png)` | 自动下载并上传 |
 | base64 内嵌 | HTML 里的 `data:image/png;base64,...` | 自动提取并上传 |
-
-三种方式发布时都会自动上传为 Confluence 附件。
 
 ---
 
@@ -120,31 +112,29 @@ def hello():
 
 ---
 
-## 웹페이지 크롤링
+## 网页抓取辅助工具
 
-MD 키워드 기반으로 웹페이지에서 관련 내용을 추출합니다.
+根据关键词从网页中提取相关内容，辅助写文档。
 
-**1단계 — `crawl_sources.txt` 편집:**
+**1. 编辑 `crawl_sources.txt`：**
 ```
-md: pages/내문서.md
+md: pages/我的文档.md
 
-https://참고할-사이트.com/page1
-https://다른사이트.com/docs
+https://参考网站.com/page1
+https://其他网站.com/docs
 ```
 
-**2단계 — 실행:**
+**2. 运行：**
 ```bash
-python crawl.py               # crawl_sources.txt 자동 사용
-python crawl.py --save-images # 이미지도 pages/images/ 에 저장
+confluence-crawl                # 使用 crawl_sources.txt
+confluence-crawl --save-images  # 同时保存图片到 pages/
 ```
-
-- 회사 내부 Confluence URL → `.env` 인증 정보로 자동 로그인
-- 외부 URL → 인증 없이 접근
 
 ---
 
 ## 注意事项
 
-- Confluence 6.x 不支持 emoji 表情符号，会自动过滤
+- Confluence 6.x 不支持 emoji，会自动过滤
 - 公司内网 SSL 证书验证已关闭（适配内网环境）
-- 文件名含空格时加引号：`python publish.py "pages/파일 이름.md"`
+- 文件名含空格时加引号：`confluence-publish "pages/文件 名称.md"`
+- `.env` 文件包含密码，务必加入 `.gitignore`
