@@ -45,11 +45,12 @@ DEFAULT_PARENT_ID=父页面ID
 
 ```
 你的项目/
-  pages/
-    图片1.png
-    图片2.png
+  pages/             ← MCP server 启动时自动创建
     报告.md           ← 写文档的地方
     报告.html         ← 或者直接放 HTML
+    图片1.png         ← md 里引用的本地图片放这里
+    图片2.png
+    images/           ← 自动创建，crawl 抓取保存的网页图片
   .env               ← 账号配置（不要上传 git）
 ```
 
@@ -153,7 +154,32 @@ MCP（Model Context Protocol）允许 Claude Code 直接调用 `publish` 和 `cr
 
 ### 配置 Claude Code
 
-在你的项目目录（放 `.env` 和 `pages/` 的目录）创建 `.claude/settings.json`：
+有两种方式，推荐用 **方式一（全局配置）**，一次配置所有项目都能用。
+
+**方式一 — CLI 全局配置（推荐）**
+
+在 PowerShell 依次运行（只需做一次）：
+
+```powershell
+# 1. pip 安装（让 confluence-mcp 命令存在）
+pip install git+https://github.com/bright6778/confluence-publisher.git
+
+# 2. 全局注册（让 Claude Code 识别这个工具）
+claude mcp add confluence-publisher confluence-mcp
+```
+
+之后所有项目打开 Claude Code 都能使用，每个项目只需放 `.env`。
+
+**方式二 — UI 配置**
+
+在 Claude Code 对话框里输入 `/mcp`，或点击界面左下角 **Customize → MCP servers → +**，
+按提示填入：
+- Name: `confluence-publisher`
+- Command: `confluence-mcp`
+
+**方式三 — 手动创建配置文件**
+
+在项目目录创建 `.claude/settings.json`：
 
 ```json
 {
@@ -165,7 +191,7 @@ MCP（Model Context Protocol）允许 Claude Code 直接调用 `publish` 和 `cr
 }
 ```
 
-> **注意**：`.env` 文件必须在同一个项目目录里（和 `.claude/settings.json` 同级），
+> **注意**：不管用哪种方式，`.env` 文件必须放在你用 Claude Code 打开的项目目录里，
 > MCP server 启动时会从该目录读取 `.env`。
 
 ### MCP 使用方式
