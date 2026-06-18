@@ -1,18 +1,15 @@
 # Confluence 自动发布工具
 
-将 `.md` 或 `.html` 文件自动发布到公司 Confluence wiki。
+将 `.md` 或 `.html` 文件自动发布到公司 Confluence wiki。  
+支持两种使用方式：**MCP（让 Claude 直接操作）** 和 **命令行**。
 
 ---
 
-## 安装
-
-打开 PowerShell，**在哪个目录都可以**，运行一次即可全局生效：
+## 安装（一次性）
 
 ```powershell
 pip install git+https://github.com/bright6778/confluence-publisher.git
 ```
-
-安装后在**任意项目目录**都能直接使用 `confluence-publish` 命令，无需每次复制脚本。
 
 更新到最新版本：
 
@@ -22,9 +19,9 @@ pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
 
 ---
 
-## 配置
+## 配置（每个项目）
 
-在**准备运行 `confluence-publish` 的项目目录**里创建 `.env` 文件（参考 `.env.example`）：
+在项目目录创建 `.env` 文件（参考 `.env.example`）：
 
 ```env
 CONFLUENCE_URL=https://wiki.yourcompany.com/
@@ -34,29 +31,105 @@ DEFAULT_SPACE=~你的用户名
 DEFAULT_PARENT_ID=父页面ID
 ```
 
-- `DEFAULT_SPACE` — 发布到哪个空间（个人空间用 `~用户名`）
-- `DEFAULT_PARENT_ID` — 父页面 ID（新页面创建在这个页面下）
-
-> **重要**：`.env` 文件包含密码，务必加入 `.gitignore`，不要上传到 git。
+> **注意**：`.env` 包含密码，务必加入 `.gitignore`，不要上传到 git。
 
 ---
 
-## 文件结构
+## 方式一：MCP — 让 Claude 直接操作（推荐）
+
+MCP（Model Context Protocol）让 Claude Code 直接调用发布工具，无需手动输入命令。
+
+### 第一步 — 注册 MCP（一次性）
+
+**CLI（推荐）：**
+
+```powershell
+claude mcp add confluence-publisher confluence-mcp
+```
+
+**或 UI：** 在 Claude Code 输入 `/mcp`，点击 `+`，填入 Name: `confluence-publisher`，Command: `confluence-mcp`。
+
+**或手动创建 `.claude/settings.json`（仅限当前项目）：**
+
+```json
+{
+  "mcpServers": {
+    "confluence-publisher": {
+      "command": "confluence-mcp"
+    }
+  }
+}
+```
+
+### 第二步 — 使用
+
+MCP server 启动时自动创建 `pages/` 和 `pages/images/`。
+
+**文档文件**：把 `.md` 或 `.html` 放进 `pages/`。
+
+**本地图片**：把图片也放进 `pages/`，在 md 里直接用文件名引用：
+
+```markdown
+![图片说明](图片文件名.png)
+```
+
+> 图片文件名建议用英文或数字，避免中文或空格（如 `diagram-1.png`、`screenshot.png`）。
+
+**`pages/images/`** 是 crawl 抓取时自动保存网页图片用的，不用手动放文件进去。
+
+准备好后直接对 Claude 说：
+
+```
+帮我把 pages/报告.md 发布到 Confluence
+```
+
+```
+抓取 https://example.com 的内容，参考关键词用 pages/报告.md
+```
+
+### 多项目并存时指定工作目录
+
+同一个 Claude Code session 里同时打开多个项目时，MCP server 可能用错目录。  
+在 MCP 配置中加 `CONFLUENCE_PROJECT_DIR` 明确指定：
+
+```json
+{
+  "mcpServers": {
+    "confluence-publisher": {
+      "command": "confluence-mcp",
+      "env": {
+        "CONFLUENCE_PROJECT_DIR": "D:/Github/你的项目目录"
+      }
+    }
+  }
+}
+```
+
+### MCP 可用工具
+
+| 工具 | 参数 | 说明 |
+|------|------|------|
+| `publish` | `file_path` | 发布 .md 或 .html 文件到 Confluence |
+| `crawl` | `url`、`md_path`（可选）、`save_images`（可选）、`top_n`（可选） | 抓取网页并提取相关内容 |
+
+---
+
+## 方式二：命令行
+
+### 文件结构
+
+手动创建 `pages/` 目录，把文件放进去：
 
 ```
 你的项目/
-  pages/             ← MCP server 启动时自动创建
-    报告.md           ← 写文档的地方
-    报告.html         ← 或者直接放 HTML
-    图片1.png         ← md 里引用的本地图片放这里
-    图片2.png
-    images/           ← 自动创建，crawl 抓取保存的网页图片
-  .env               ← 账号配置（不要上传 git）
+  pages/
+    报告.md        ← 写文档的地方
+    报告.html      ← 或直接放 HTML
+    图片1.png      ← md 里引用的本地图片放这里
+  .env             ← 账号配置（不要上传 git）
 ```
 
----
-
-## 发布命令
+### 发布命令
 
 ```bash
 # 发布单个文件
@@ -67,13 +140,29 @@ confluence-publish "pages/报告.html"
 confluence-publish
 ```
 
+### 网页内容抓取
+
+根据关键词从网页提取相关内容，辅助写文档。
+
+编辑 `crawl_sources.txt`：
+
+```
+md: pages/我的文档.md
+
+https://参考网站.com/page1
+https://其他网站.com/docs
+```
+
+运行：
+
+```bash
+confluence-crawl                # 使用 crawl_sources.txt
+confluence-crawl --save-images  # 同时保存图片到 pages/images/
+```
+
 ---
 
-## 写文档的方式
-
-### 方式一：直接写 Markdown（推荐）
-
-新建 `pages/报告.md`，用标准 Markdown 语法：
+## 写 Markdown 文档
 
 ```markdown
 # 文档标题
@@ -96,12 +185,6 @@ def hello():
 ​```
 ```
 
-### 方式二：AI 生成 HTML 后发布
-
-1. 让 AI（Claude 等）生成报告 HTML
-2. 将 HTML 文件放到 `pages/` 目录
-3. 运行 `confluence-publish`
-
 ---
 
 ## 图片处理
@@ -122,98 +205,6 @@ def hello():
 - **页面不存在** → 自动创建（在 `DEFAULT_PARENT_ID` 下）
 - **发布失败** → 自动删除刚创建的空页面（不留垃圾页）
 - **标题来源** → `<title>` 标签 → `<h1>` 标签 → 文件名（优先级顺序）
-
----
-
-## 网页内容抓取
-
-根据关键词从网页中提取相关内容，辅助写文档。
-
-**第一步 — 编辑 `crawl_sources.txt`：**
-
-```
-md: pages/我的文档.md
-
-https://参考网站.com/page1
-https://其他网站.com/docs
-```
-
-**第二步 — 运行：**
-
-```bash
-confluence-crawl                # 使用 crawl_sources.txt
-confluence-crawl --save-images  # 同时保存图片到 pages/
-```
-
----
-
-## MCP 工具（让 AI 直接调用）
-
-MCP（Model Context Protocol）允许 Claude Code 直接调用 `publish` 和 `crawl` 工具，
-无需手动输入命令，直接对话即可完成操作。
-
-### 配置 Claude Code
-
-有两种方式，推荐用 **方式一（全局配置）**，一次配置所有项目都能用。
-
-**方式一 — CLI 全局配置（推荐）**
-
-在 PowerShell 依次运行（只需做一次）：
-
-```powershell
-# 1. pip 安装（让 confluence-mcp 命令存在）
-pip install git+https://github.com/bright6778/confluence-publisher.git
-
-# 2. 全局注册（让 Claude Code 识别这个工具）
-claude mcp add confluence-publisher confluence-mcp
-```
-
-之后所有项目打开 Claude Code 都能使用，每个项目只需放 `.env`。
-
-**方式二 — UI 配置**
-
-在 Claude Code 对话框里输入 `/mcp`，或点击界面左下角 **Customize → MCP servers → +**，
-按提示填入：
-- Name: `confluence-publisher`
-- Command: `confluence-mcp`
-
-**方式三 — 手动创建配置文件**
-
-在项目目录创建 `.claude/settings.json`：
-
-```json
-{
-  "mcpServers": {
-    "confluence-publisher": {
-      "command": "confluence-mcp"
-    }
-  }
-}
-```
-
-> **注意**：不管用哪种方式，`.env` 文件必须放在你用 Claude Code 打开的项目目录里，
-> MCP server 启动时会从该目录读取 `.env`。
-
-### MCP 使用方式
-
-配置好后，直接在 Claude Code 对话框中说：
-
-```
-帮我把 pages/报告.md 发布到 Confluence
-```
-
-```
-抓取 https://example.com 的内容，参考关键词用 pages/报告.md
-```
-
-Claude 会自动调用对应工具并返回结果，不需要手动运行任何命令。
-
-### MCP 可用工具
-
-| 工具 | 参数 | 说明 |
-|------|------|------|
-| `publish` | `file_path` | 发布 .md 或 .html 文件到 Confluence |
-| `crawl` | `url`、`md_path`（可选）、`save_images`（可选）、`top_n`（可选） | 抓取网页并提取相关内容 |
 
 ---
 
