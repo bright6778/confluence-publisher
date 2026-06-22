@@ -110,15 +110,10 @@ pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
 **方式一 — CLI 全局配置（推荐）**
 
 ```powershell
-claude mcp add confluence-publisher confluence-mcp
+claude mcp add confluence_publisher confluence-mcp
 ```
 
-**方式二 — UI 配置**
-
-在 Claude Code 对话框输入 `/mcp`，或点击 **Customize → MCP servers → +**，
-填入 Name: `confluence-publisher`，Command: `confluence-mcp`。
-
-**方式三 — 手动配置文件（仅限当前项目）**
+**方式二 — 手动配置文件（仅限当前项目）**
 
 在项目目录创建 `.claude/settings.json`：
 

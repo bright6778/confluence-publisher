@@ -11,7 +11,15 @@
 pip install git+https://github.com/bright6778/confluence-publisher.git
 ```
 
-更新到最新版本：
+这一条命令会同时安装 CLI 工具和 MCP server：
+
+| 安装内容 | 用途 |
+|---|---|
+| `confluence-publish` | 命令行直接运行 |
+| `confluence-crawl` | 命令行直接运行 |
+| `confluence-mcp` | MCP server 本体（Claude Code 自动启动） |
+
+更新到最新版本（如遇 `.env` 不生效或命令报错，先升级）：
 
 ```powershell
 pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
@@ -41,20 +49,25 @@ MCP（Model Context Protocol）让 Claude Code 直接调用发布工具，无需
 
 ### 第一步 — 注册 MCP（一次性）
 
-**CLI（推荐）：**
+**CLI（推荐，全局生效）：**
 
 ```powershell
-claude mcp add confluence-publisher confluence-mcp
+claude mcp add confluence_publisher confluence-mcp
 ```
 
-**或 UI：** 在 Claude Code 输入 `/mcp`，点击 `+`，填入 Name: `confluence-publisher`，Command: `confluence-mcp`。
+> 已用旧名称（`confluence-publisher`，含连字符）注册过的需重新注册：
+> ```powershell
+> claude mcp remove confluence-publisher
+> claude mcp add confluence_publisher confluence-mcp
+> ```
+> 连字符会导致工具名 `mcp__confluence-publisher__publish` 无法被解析，Claude 找不到工具。
 
 **或手动创建 `.claude/settings.json`（仅限当前项目）：**
 
 ```json
 {
   "mcpServers": {
-    "confluence-publisher": {
+    "confluence_publisher": {
       "command": "confluence-mcp"
     }
   }
@@ -63,7 +76,7 @@ claude mcp add confluence-publisher confluence-mcp
 
 ### 第二步 — 使用
 
-MCP server 启动时自动创建 `pages/` 和 `pages/images/`。
+Claude Code 打开项目时会自动启动 MCP server，`pages/` 和 `pages/images/` 在此时自动创建。
 
 **文档文件**：把 `.md` 或 `.html` 放进 `pages/`。
 
@@ -95,7 +108,7 @@ MCP server 启动时自动创建 `pages/` 和 `pages/images/`。
 ```json
 {
   "mcpServers": {
-    "confluence-publisher": {
+    "confluence_publisher": {
       "command": "confluence-mcp",
       "env": {
         "CONFLUENCE_PROJECT_DIR": "D:/Github/你的项目目录"
@@ -193,7 +206,7 @@ def hello():
 
 | 类型 | 写法 | 说明 |
 |------|------|------|
-| 本地文件 | `![说明](图片.png)` | 放在 `pages/` 目录 |
+| 本地文件 | `![说明](图片.png)` 或 `![说明](./图片.png)` | 放在 `pages/` 目录，两种写法都支持 |
 | 外部 URL | `![说明](https://example.com/图.png)` | 自动下载并上传 |
 | base64 内嵌 | HTML 里的 `data:image/png;base64,...` | 自动提取并上传 |
 

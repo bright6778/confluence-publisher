@@ -7,7 +7,7 @@ import io
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("confluence-publisher")
+mcp = FastMCP("confluence_publisher")
 
 
 def _project_root() -> Path:

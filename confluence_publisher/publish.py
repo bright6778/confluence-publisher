@@ -225,7 +225,8 @@ def process_images(body: str, html_path: Path, page_id: str) -> str:
                     ext = "png"
                 filename = hashlib.md5(src.encode()).hexdigest()[:12] + "." + ext
             else:
-                img_path = (html_path.parent / src).resolve()
+                src_clean = src.lstrip("./\\")
+                img_path = (html_path.parent / src_clean).resolve()
                 if not img_path.exists():
                     print(f"  [WARN] 이미지 없음: {img_path}")
                     return '<br/>'
