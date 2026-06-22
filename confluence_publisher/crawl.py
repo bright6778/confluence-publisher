@@ -75,7 +75,11 @@ def crawl(url: str, md_path: Path = None, save_images: bool = False,
     # .env 에서 Confluence 인증 정보 로드 (내부망 페이지 접근용)
     from dotenv import load_dotenv
     import os
-    load_dotenv()
+    from pathlib import Path as _Path
+    for _d in [_Path.cwd(), *_Path.cwd().parents]:
+        if (_d / ".env").exists():
+            load_dotenv(_d / ".env")
+            break
     conf_url = os.environ.get("CONFLUENCE_URL", "").rstrip("/")
     username = os.environ.get("CONFLUENCE_USERNAME") if conf_url and url.startswith(conf_url) else None
     password = os.environ.get("CONFLUENCE_PASSWORD") if conf_url and url.startswith(conf_url) else None

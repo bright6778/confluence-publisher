@@ -39,6 +39,12 @@ DEFAULT_SPACE=~你的用户名
 DEFAULT_PARENT_ID=父页面ID
 ```
 
+工具启动时会从**当前目录向上**自动查找 `.env`，找不到时会打印提示：
+
+```
+[WARN] 未找到 .env 文件（从 D:\你的项目 向上搜索）。请在项目目录创建 .env。
+```
+
 > **注意**：`.env` 包含密码，务必加入 `.gitignore`，不要上传到 git。
 
 ---
@@ -226,3 +232,5 @@ def hello():
 - Confluence 6.x 不支持 emoji，会自动过滤
 - 公司内网 SSL 证书验证已关闭（适配内网环境）
 - 文件名含空格时加引号：`confluence-publish "pages/文件 名称.md"`
+- `.env` 放在运行命令的目录或其任意父目录均可，工具会自动向上查找
+- MCP 注册名必须用下划线：`confluence_publisher`（含连字符的旧名称会导致工具无法调用）

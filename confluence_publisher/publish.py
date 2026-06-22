@@ -35,13 +35,28 @@ SESSION: requests.Session = None  # type: ignore
 PAGES_DIR: Path = Path("pages")
 
 
+def _find_dotenv() -> Path | None:
+    for d in [Path.cwd(), *Path.cwd().parents]:
+        p = d / ".env"
+        if p.exists():
+            return p
+    return None
+
+
 def _init():
     """환경변수 로드 및 전역 설정 초기화 (main() 진입 시 호출)"""
     global CONFLUENCE_URL, USERNAME, PASSWORD, DEFAULT_SPACE, DEFAULT_PARENT_ID, SESSION, PAGES_DIR
-    load_dotenv()
-    CONFLUENCE_URL    = os.environ["CONFLUENCE_URL"].rstrip("/")
-    USERNAME          = os.environ["CONFLUENCE_USERNAME"]
-    PASSWORD          = os.environ["CONFLUENCE_PASSWORD"]
+    dotenv_path = _find_dotenv()
+    if dotenv_path:
+        load_dotenv(dotenv_path)
+    else:
+        print(f"[WARN] 未找到 .env 文件（从 {Path.cwd()} 向上搜索）。请在项目目录创建 .env。")
+    try:
+        CONFLUENCE_URL    = os.environ["CONFLUENCE_URL"].rstrip("/")
+        USERNAME          = os.environ["CONFLUENCE_USERNAME"]
+        PASSWORD          = os.environ["CONFLUENCE_PASSWORD"]
+    except KeyError as e:
+        raise KeyError(f"{e} — 请在项目目录创建 .env 文件，参考 .env.example") from None
     DEFAULT_SPACE     = os.environ.get("DEFAULT_SPACE", "")
     DEFAULT_PARENT_ID = os.environ.get("DEFAULT_PARENT_ID", "")
     SESSION = requests.Session()
