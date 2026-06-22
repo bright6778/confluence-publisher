@@ -36,18 +36,30 @@ def _capture(func, *args, **kwargs) -> str:
 def publish(file_path: str) -> str:
     """Publish a Markdown or HTML file to Confluence.
 
+    Images in a sibling {filename}_images/ folder are handled automatically.
+
     Args:
-        file_path: Path to the .md or .html file to publish (relative or absolute).
+        file_path: Filename or path of the .md or .html file (absolute, relative to
+                   project root, or just the filename — the tool will search for it).
     """
     try:
         root = _project_root()
         os.chdir(root)
         from confluence_publisher.publish import _init, publish_file
         _init()
-        path = Path(file_path) if Path(file_path).is_absolute() else root / file_path
-        return _capture(publish_file, path)
+        p = Path(file_path)
+        if p.is_absolute():
+            resolved = p
+        else:
+            candidate = root / file_path
+            if not candidate.exists():
+                matches = list(root.rglob(p.name))
+                resolved = matches[0] if matches else candidate
+            else:
+                resolved = candidate
+        return _capture(publish_file, resolved)
     except KeyError as e:
-        return f"[ERROR] 环境变量缺失: {e}。请在项目目录创建 .env 文件。"
+        return f"[ERROR] 환경변수 누락: {e}。请在项目目录创建 .env 文件。"
     except Exception as e:
         return f"[ERROR] {e}"
 

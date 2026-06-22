@@ -84,26 +84,34 @@ claude mcp add confluence_publisher confluence-mcp
 
 Claude Code 打开项目时会自动启动 MCP server，`pages/` 和 `pages/images/` 在此时自动创建。
 
-**文档文件**：把 `.md` 或 `.html` 放进 `pages/`。
+**文档文件**：`.md` 或 `.html` 可以放在项目的任意位置，不限于 `pages/`。
 
-**本地图片**：把图片也放进 `pages/`，在 md 里直接用文件名引用：
+**本地图片**：图片放在与 `.md` 同级的 `{文件名}_images/` 子文件夹里，在 md 里用相对路径引用：
 
 ```markdown
-![图片说明](图片文件名.png)
+![图片说明](./报告_images/图片文件名.png)
 ```
 
-> 图片文件名建议用英文或数字，避免中文或空格（如 `diagram-1.png`、`screenshot.png`）。
-
-**`pages/images/`** 是 crawl 抓取时自动保存网页图片用的，不用手动放文件进去。
-
-准备好后直接对 Claude 说：
+目录结构示例：
 
 ```
-帮我把 pages/报告.md 发布到 Confluence
+你的项目/
+  reports/
+    20260618_报告.md
+    20260618_报告_images/
+      01_架构图.png
+      02_流程图.png
+  .env
+```
+
+直接对 Claude 说文件名即可，工具会在项目内自动搜索：
+
+```
+帮我把 20260618_报告.md 发布到 Confluence
 ```
 
 ```
-抓取 https://example.com 的内容，参考关键词用 pages/报告.md
+抓取 https://example.com 的内容，参考关键词用 reports/20260618_报告.md
 ```
 
 ### 多项目并存时指定工作目录
@@ -212,7 +220,7 @@ def hello():
 
 | 类型 | 写法 | 说明 |
 |------|------|------|
-| 本地文件 | `![说明](图片.png)` 或 `![说明](./图片.png)` | 放在 `pages/` 目录，两种写法都支持 |
+| 本地文件 | `![说明](./报告_images/图片.png)` | 与 `.md` 同级的 `_images/` 子文件夹 |
 | 外部 URL | `![说明](https://example.com/图.png)` | 自动下载并上传 |
 | base64 内嵌 | HTML 里的 `data:image/png;base64,...` | 自动提取并上传 |
 
