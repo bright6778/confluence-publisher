@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "confluence_publisher": {
+      "command": "confluence-mcp"
+    }
+  }
+}

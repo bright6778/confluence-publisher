@@ -10,11 +10,16 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP("confluence_publisher")
 
 
-def _project_root() -> Path:
-    """Project root: CONFLUENCE_PROJECT_DIR env var > upward .env search > CWD."""
+def _project_root(file_path: str = None) -> Path:
+    """Project root: CONFLUENCE_PROJECT_DIR env var > upward .env search from file > CWD."""
     env_dir = os.environ.get("CONFLUENCE_PROJECT_DIR")
     if env_dir:
         return Path(env_dir).expanduser().resolve()
+    if file_path:
+        start = Path(file_path).resolve().parent
+        for directory in [start, *start.parents]:
+            if (directory / ".env").exists():
+                return directory
     for directory in [Path.cwd(), *Path.cwd().parents]:
         if (directory / ".env").exists():
             return directory
@@ -43,7 +48,7 @@ def publish(file_path: str) -> str:
                    project root, or just the filename — the tool will search for it).
     """
     try:
-        root = _project_root()
+        root = _project_root(file_path)
         os.chdir(root)
         from confluence_publisher.publish import _init, publish_file
         _init()
