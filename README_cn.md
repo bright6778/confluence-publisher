@@ -143,7 +143,7 @@ confluence-crawl --save-images        # 同时保存图片
 |------|------|----------|
 | 本地文件 | `![说明](./报告_images/图片.png)` | 从 `{文件名}_images/` 子目录上传 |
 | 外部 URL | `![说明](https://example.com/图.png)` | 自动下载后上传 |
-| Base64 内嵌 | HTML 中的 `data:image/png;base64,...` | 自动提取并上传 |
+| Base64 内嵌 | HTML 中的 `data:image/png;base64,...` | 自动提取后上传 |
 
 ---
 

@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 dependencies = [
     "requests>=2.31.0",
     "markdown>=3.5.0",
-    "python-dotenv>=1.0.0",
+    "keyring>=24.0.0",
     "beautifulsoup4>=4.12.0",
     "mcp>=1.0.0",
 ]
@@ -19,6 +19,7 @@ dependencies = [
 confluence-publish = "confluence_publisher.publish:main"
 confluence-crawl   = "confluence_publisher.crawl:main"
 confluence-mcp     = "confluence_publisher.mcp_server:main"
+confluence-setup   = "confluence_publisher.setup_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

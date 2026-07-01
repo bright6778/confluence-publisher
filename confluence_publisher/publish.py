@@ -15,7 +15,7 @@ import html as html_module
 import markdown as markdown_lib
 import requests
 from pathlib import Path
-from dotenv import load_dotenv
+from confluence_publisher import config as _cfg
 
 # Windows 터미널 인코딩 강제 UTF-8
 if hasattr(sys.stdout, "reconfigure"):
@@ -35,30 +35,20 @@ SESSION: requests.Session = None  # type: ignore
 PAGES_DIR: Path = Path("pages")
 
 
-def _find_dotenv() -> Path | None:
-    for d in [Path.cwd(), *Path.cwd().parents]:
-        p = d / ".env"
-        if p.exists():
-            return p
-    return None
-
-
 def _init():
-    """환경변수 로드 및 전역 설정 초기화 (main() 진입 시 호출)"""
+    """凭据加载及全局初始化（进入 main() 时调用）"""
     global CONFLUENCE_URL, USERNAME, PASSWORD, DEFAULT_SPACE, DEFAULT_PARENT_ID, SESSION, PAGES_DIR
-    dotenv_path = _find_dotenv()
-    if dotenv_path:
-        load_dotenv(dotenv_path)
-    else:
-        print(f"[WARN] 未找到 .env 文件（从 {Path.cwd()} 向上搜索）。请在项目目录创建 .env。")
-    try:
-        CONFLUENCE_URL    = os.environ["CONFLUENCE_URL"].rstrip("/")
-        USERNAME          = os.environ["CONFLUENCE_USERNAME"]
-        PASSWORD          = os.environ["CONFLUENCE_PASSWORD"]
-    except KeyError as e:
-        raise KeyError(f"{e} — 请在项目目录创建 .env 文件，参考 .env.example") from None
-    DEFAULT_SPACE     = os.environ.get("DEFAULT_SPACE", "")
-    DEFAULT_PARENT_ID = os.environ.get("DEFAULT_PARENT_ID", "")
+    url      = _cfg.get("CONFLUENCE_URL")
+    username = _cfg.get("CONFLUENCE_USERNAME")
+    password = _cfg.get("CONFLUENCE_PASSWORD")
+    missing = [k for k, v in [("CONFLUENCE_URL", url), ("CONFLUENCE_USERNAME", username), ("CONFLUENCE_PASSWORD", password)] if not v]
+    if missing:
+        raise KeyError(f"缺少凭据: {', '.join(missing)}。请运行 confluence-setup 设置。")
+    CONFLUENCE_URL    = url.rstrip("/")
+    USERNAME          = username
+    PASSWORD          = password
+    DEFAULT_SPACE     = _cfg.get("DEFAULT_SPACE") or ""
+    DEFAULT_PARENT_ID = _cfg.get("DEFAULT_PARENT_ID") or ""
     SESSION = requests.Session()
     SESSION.auth = (USERNAME, PASSWORD)
     SESSION.headers.update({"Content-Type": "application/json", "Accept": "application/json"})

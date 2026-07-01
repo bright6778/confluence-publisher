@@ -11,18 +11,14 @@ mcp = FastMCP("confluence_publisher")
 
 
 def _project_root(file_path: str = None) -> Path:
-    """Project root: CONFLUENCE_PROJECT_DIR env var > upward .env search from file > CWD."""
+    """Project root: CONFLUENCE_PROJECT_DIR env var > directory of file_path > CWD."""
     env_dir = os.environ.get("CONFLUENCE_PROJECT_DIR")
     if env_dir:
         return Path(env_dir).expanduser().resolve()
     if file_path:
-        start = Path(file_path).resolve().parent
-        for directory in [start, *start.parents]:
-            if (directory / ".env").exists():
-                return directory
-    for directory in [Path.cwd(), *Path.cwd().parents]:
-        if (directory / ".env").exists():
-            return directory
+        p = Path(file_path)
+        if p.is_absolute():
+            return p.parent
     return Path.cwd()
 
 
@@ -64,7 +60,7 @@ def publish(file_path: str) -> str:
                 resolved = candidate
         return _capture(publish_file, resolved)
     except KeyError as e:
-        return f"[ERROR] 환경변수 누락: {e}。请在项目目录创建 .env 文件。"
+        return f"[ERROR] {e}"
     except Exception as e:
         return f"[ERROR] {e}"
 
