@@ -14,7 +14,7 @@ pip install git+https://github.com/bright6778/confluence-publisher.git
 更新：
 
 ```powershell
-pip install --upgrade git+https://github.com/bright6778/confluence-publisher.git
+pip install --force-reinstall --no-cache-dir git+https://github.com/bright6778/confluence-publisher.git
 ```
 
 ---

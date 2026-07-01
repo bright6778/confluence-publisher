@@ -19,11 +19,21 @@ def main():
         print(f"Keychain 服务名: {SERVICE}\n")
         for key in ALL_KEYS:
             val = get(key)
+            if not val:
+                print(f"  ✗ {key}: （未设置）")
+                continue
+            # 判断来源
+            try:
+                import keyring as _kr
+                from_keyring = bool(_kr.get_password(SERVICE, key))
+            except Exception:
+                from_keyring = False
+            source = "keyring" if from_keyring else "os.environ"
             if key == "CONFLUENCE_PASSWORD":
-                display = "******" if val else "（未设置）"
+                display = "******"
             else:
-                display = val or "（未设置）"
-            print(f"  {key}: {display}")
+                display = val
+            print(f"  ✓ {key}: {display}  [{source}]")
         return
 
     print("=== Confluence Publisher 凭据设置 ===")
