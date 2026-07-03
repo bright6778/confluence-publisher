@@ -314,7 +314,7 @@ def publish_file(html_path: Path):
         version = existing_page["version"]["number"]
         body = process_images(body, html_path, page_id)
         validate_xml(body)
-        update_page(page_id, title, body, version)
+        update_page(page_id, title, body, version, parent_id)
         page_url = f"{CONFLUENCE_URL}/pages/viewpage.action?pageId={page_id}"
         print(f"[UPDATE] {title}  →  {page_url}")
     else:
