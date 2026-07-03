@@ -156,13 +156,18 @@ def create_page(space: str, title: str, body: str, parent_id: str = None) -> dic
     return r.json()
 
 
-def update_page(page_id: str, title: str, body: str, current_version: int) -> dict:
+def update_page(page_id: str, title: str, body: str, current_version: int, parent_id: str = None) -> dict:
     payload = {
         "type": "page",
         "title": title,
         "version": {"number": current_version + 1},
         "body": {"storage": {"value": body, "representation": "storage"}},
     }
+    if parent_id:
+        # ancestors도 함께 보내야 Confluence 페이지 트리 캐시가 즉시 갱신됨.
+        # (생성 시 ancestors를 설정해도, 뒤이은 본문 update에 ancestors가 빠지면
+        #  DB상 부모-자식 관계는 맞지만 child/page 목록·사이드바에는 반영되지 않는 경우가 있음)
+        payload["ancestors"] = [{"id": str(parent_id)}]
     r = SESSION.put(f"{CONFLUENCE_URL}/rest/api/content/{page_id}", data=json.dumps(payload))
     r.raise_for_status()
     return r.json()
@@ -318,7 +323,7 @@ def publish_file(html_path: Path):
         try:
             body = process_images(body, html_path, page_id)
             validate_xml(body)
-            update_page(page_id, title, body, 1)
+            update_page(page_id, title, body, 1, parent_id)
         except Exception:
             delete_page(page_id)
             raise
