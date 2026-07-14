@@ -71,6 +71,57 @@ def extract_title(raw: str, fallback: str) -> str:
     return fallback
 
 
+MAX_PARAGRAPH_CHARS = 200
+
+_TAG_RE = re.compile(r'<[^>]+>')
+_SENTENCE_SPLIT_RE = re.compile(r'(?<=[。!?！？])|(?<=[.!?])(?=\s)')
+
+
+def _mask_tags(text: str):
+    """인라인 태그(<a>, <strong> 등)를 임시 플레이스홀더로 치환 — 문장 분리 시 태그 내부 텍스트가 끊기지 않도록."""
+    tags = []
+
+    def repl(m):
+        tags.append(m.group(0))
+        return f'\x00{len(tags) - 1}\x00'
+
+    return _TAG_RE.sub(repl, text), tags
+
+
+def _unmask_tags(text: str, tags: list) -> str:
+    return re.sub(r'\x00(\d+)\x00', lambda m: tags[int(m.group(1))], text)
+
+
+def split_long_paragraphs(body: str, max_chars: int = MAX_PARAGRAPH_CHARS) -> str:
+    """max_chars를 넘는 <p> 문단을 문장 경계에서 여러 <p>로 분리."""
+
+    def split_p(m):
+        content = m.group(1)
+        if len(content) <= max_chars:
+            return m.group(0)
+        if re.search(r'<(ul|ol|table|pre|blockquote)[\s>]', content, re.IGNORECASE):
+            return m.group(0)
+
+        masked, tags = _mask_tags(content)
+        sentences = [s for s in _SENTENCE_SPLIT_RE.split(masked) if s.strip()]
+        if len(sentences) <= 1:
+            return m.group(0)
+
+        groups, cur, cur_len = [], [], 0
+        for sentence in sentences:
+            if cur and cur_len + len(sentence) > max_chars:
+                groups.append(''.join(cur))
+                cur, cur_len = [], 0
+            cur.append(sentence)
+            cur_len += len(sentence)
+        if cur:
+            groups.append(''.join(cur))
+
+        return ''.join(f'<p>{_unmask_tags(g, tags).strip()}</p>' for g in groups)
+
+    return re.sub(r'<p>(.*?)</p>', split_p, body, flags=re.DOTALL)
+
+
 _XML_ENTITIES = {'amp', 'lt', 'gt', 'quot', 'apos'}
 
 def fix_html_entities(text: str) -> str:
@@ -300,11 +351,13 @@ def publish_file(html_path: Path):
         raw = md_to_html(html_path)
         title = extract_title(raw, html_path.stem)
         body = extract_body(raw)
+        body = split_long_paragraphs(body)
         body = html_to_storage(body)
     else:
         raw = html_path.read_text(encoding="utf-8")
         title = extract_title(raw, html_path.stem)
         body = extract_body(raw)
+        body = split_long_paragraphs(body)
         body = html_to_storage(body)
 
     existing_page = get_page_by_title(space, title)
