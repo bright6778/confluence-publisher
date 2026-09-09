@@ -111,7 +111,12 @@ def crawl(url: str, md_path: Path = None, save_images: bool = False,
             current_texts = []
         else:
             t = clean_text(tag)
-            if len(t) > 20:
+            # 표 셀(td/th)은 짧아도 의미 있는 값이다(예: 화면ID) — 길이 필터를 적용하지 않는다.
+            # p/li 는 내비게이션 부스러기 제거를 위해 20자 필터를 유지한다.
+            if tag.name in ("td", "th"):
+                if t:
+                    current_texts.append(t)
+            elif len(t) > 20:
                 current_texts.append(t)
 
     if current_texts:
